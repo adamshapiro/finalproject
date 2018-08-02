@@ -1,0 +1,48 @@
+{% extends "games/layout.html" %}
+
+{% load static %}
+
+{% block jsfile %}<script type="text/javascript" src="{% static 'games/login.js' %}">
+</script>{% endblock %}
+
+{% block body %}
+
+<h1 class="display-3">{% if new_user %} Sign Up: {% else %} Log In: {% endif %}</h1>
+
+<form id="userForm" method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% for field in form.visible_fields %}
+        <div class="form-group mb-2">
+            {{ field.label_tag }}
+
+            {{ field }}
+            {% for error in field.errors %}
+                <div class="invalid-feedback">
+                    {{ error }}
+                </div>
+            {% endfor %}
+
+            {% if field.help_text %}
+                <small class="form-text text-muted">{{field.help_text}}</small>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+<hr>
+{% if not new_user %}
+    Creating a new account? <a class="btn btn-info" href="{% url 'register' %}">Click here!</a>
+{% else %}
+    <a class="btn btn-info" href="{% url 'login' %}">Back to Login</a>
+{% endif %}
+{% endblock %}
