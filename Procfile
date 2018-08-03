@@ -1,1 +1,1 @@
-web: gunicorn reversio.wsgi
+web: daphne reversio.asgi:application

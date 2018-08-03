@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -70,6 +71,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'reversio.wsgi.application'
 
+ASGI_APPLICATION = 'reversio.routing.application'
+
+redis_host = os.environ.get('REDIS_HOST', 'localhost')
+
+CHANNEL_LAYER = {
+    'default': {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(redis_host, 6379)]
+        }
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
@@ -119,3 +132,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+import dj_database_url
+DATABASES['default'].update(dj_database_url.config(conn_max_age=500))
+
+import django_heroku
+django_heroku.settings(locals())
