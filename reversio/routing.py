@@ -8,7 +8,7 @@ from games.consumers import GamesConsumer
 application = ProtocolTypeRouter({
     'websocket': AuthMiddlewareStack(
         URLRouter([
-            path('/games/<label>', GamesConsumer)
+            path('game/<label>', GamesConsumer)
         ])
     )
 })

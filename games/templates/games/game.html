@@ -1,0 +1,14 @@
+{% extends 'games/layout.html' %}
+{% load static %}
+
+{% block jsfile %}
+<script type="text/javascript"
+src="{% static 'games/reconnecting-websocket.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'games/game.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+{{ game.label }}
+
+{% endblock %}

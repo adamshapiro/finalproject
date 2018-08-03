@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 import string, random
 
@@ -41,20 +42,11 @@ class Game(models.Model):
         return self.history.split('x')
 
     def get_absolute_url(self):
-        return f"game/{self.label}"
+        return reverse('game', args=[self.label])
 
     def clean(self):
-        if white_player == black_player:
+        if self.white_player == self.black_player:
             raise ValidationError('A single person cannot play both sides.')
-
-        # give each Game instance a unique label
-        while self.label is None:
-            new_label = ''.join(random.choices(
-                string.ascii_lowercase + string.digits,
-                k=12
-            ))
-            if not Game.objects.filter(label=new_label).exists():
-                self.label = new_label
 
     def save(self, *args, **kwargs):
         self.clean()

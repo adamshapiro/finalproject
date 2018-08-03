@@ -1,7 +1,39 @@
 {% extends 'games/layout.html' %}
 
 {% block body %}
-
-TODO
+<div class="row">
+    <div class="col-2">
+        <div class="nav flex-column nav-pills" id="navTab">
+            <a class="nav-link active" id="lobbyTab" data-toggle="pill"
+            href="#lobbyContent">
+                Lobby
+            </a>
+            <a class="nav-link" id="gamesTab" data-toggle="pill" href="#gamesContent">
+                My Games
+            </a>
+        </div>
+    </div>
+    <div class="col-10">
+        <div class="tab-content" id="navContent">
+            <div class="tab-pane fade show active" id="lobbyContent">
+                <div class="row">
+                {% for game in games %}
+                {% include 'games/card.html' %}
+                {% endfor %}
+                </div>
+                <a class="btn btn-primary mt-4" href="{% url 'new_game' %}">
+                    Host Game
+                </a>
+            </div>
+            <div class="tab-pane fade" id="gamesContent">
+                <div class="row">
+                {% for game in my_games %}
+                {% include 'games/card.html' %}
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

@@ -75,7 +75,7 @@ ASGI_APPLICATION = 'reversio.routing.application'
 
 redis_host = os.environ.get('REDIS_HOST', 'localhost')
 
-CHANNEL_LAYER = {
+CHANNEL_LAYERS = {
     'default': {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {

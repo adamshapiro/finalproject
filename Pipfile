@@ -9,6 +9,7 @@ gunicorn = "*"
 django-heroku = "*"
 channels = "*"
 dj-database-url = "*"
+channels-redis = "*"
 
 [dev-packages]
 

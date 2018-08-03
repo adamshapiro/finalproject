@@ -5,16 +5,44 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.http import is_safe_url
+from django.db.models import Q
 
 from .forms import RegisterForm, LoginForm
+from .models import Game
 # Create your views here.
 
 @login_required(login_url='login')
 def index(request):
+    user=request.user
+    games = Game.objects.filter(status='O')
     context = {
-        'user': request.user
+        'user': request.user,
+        'games': games,
+        'my_games': games.filter(Q(white_player=user) | Q(black_player=user))
     }
     return render(request, 'games/index.html', context)
+
+@login_required(login_url='login')
+def game(request, game_label):
+    try:
+        game = Game.objects.get(label=game_label)
+    except Game.DoesNotExist:
+        return HttpResponseRedirect(reverse('index'))
+
+    context = {
+        'user': request.user,
+        'game': game
+    }
+    return render(request, 'games/game.html', context)
+
+@login_required(login_url='login')
+def new_game(request):
+    print('test url')
+    user = request.user
+    hosted = Game.objects.create(white_player=user)
+    print(hosted.label)
+
+    return HttpResponseRedirect(reverse('game', args=[hosted.label]))
 
 def login_view(request):
     # retain the 'next' context and sanitize it
