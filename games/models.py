@@ -22,12 +22,15 @@ class Game(models.Model):
         ('W', 'White Victory'),
         ('B', 'Black Victory')
     )
-    white_player = models.ForeignKey(User, on_delete=models.CASCADE, related_name="white")
+    white_player = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="white_games")
     black_player = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         blank=True, null=True,
-        related_name="black"
+        related_name="black_games"
     )
     status = models.CharField(max_length=1, choices=STATUS_OPTIONS, default='O')
     history = models.CharField(max_length=240, default='')
@@ -35,6 +38,10 @@ class Game(models.Model):
 
     def add_move(self, move):
         self.history += f"x{move}"
+        self.save()
+
+    def end_game(self, winner):
+        self.status = winner
         self.save()
 
     # parse the game's history into a list of moves

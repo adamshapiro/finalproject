@@ -17,6 +17,8 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
         command = content.get('command', None)
         if command == 'move':
             await self.send_move(content['move'])
+        elif command == 'end_game':
+            await self.send_end(content['winner'])
 
     async def disconnect(self, close_code):
         # remove the user from the group associated with the game before closing
@@ -32,10 +34,12 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
             position = 'spectating'
 
         history = game.parsed_history
-        if len(history) % 2 == 0:
-            turn = 'black'
+        if game.status != 'O':
+            turn = game.get_status_display()
+        elif len(history) % 2 == 0:
+            turn = "Black's Turn"
         else:
-            turn = 'white'
+            turn = "White's Turn"
 
         # send the games history, the player's position, and
         # the current turn to the client
@@ -50,9 +54,9 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
         game = await get_game(self.label)
         game.add_move(move)
         if move[0] == 'w':
-            turn = 'black'
+            turn = "Black's Turn"
         else:
-            turn = 'white'
+            turn = "White's Turn"
         await self.channel_layer.group_send(
             self.label,
             {
@@ -62,11 +66,28 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
+    async def send_end(self, winner):
+        game = await get_game(self.label)
+        game.end_game(winner)
+        await self.channel_layer.group_send(
+            self.label,
+            {
+            'type': 'game.end',
+            'winner': game.get_status_display()
+            }
+        )
+
     async def game_move(self, event):
         await self.send_json({
             'new_move': True,
             'move': event['move'],
             'turn': event['turn']
+        })
+
+    async def game_end(self, event):
+        await self.send_json({
+            'game_over': True,
+            'winner': event['winner']
         })
 
 # function to query Django model asynchronously

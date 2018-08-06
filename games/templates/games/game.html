@@ -10,35 +10,7 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
 
 {% block body %}
 
-<div class="row">
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table">
-                <thead> <!-- head is necessary to control width of columns -->
-                    <tr>
-                        {% for _ in ''|ljust:"6" %}
-                        <th class="border-0" scope='col'></th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td id='whiteScore' class="reversi-cell bg-dark p-0"></td>
-                        <td id='whiteCount' colspan="2"
-                        class="align-middle pl-0 text-center">
-                            Score:
-                        </td>
-                        <td id='blackScore' class="reversi-cell p-0"></td>
-                        <td id='blackCount' colspan="2"
-                        class="align-middle pl-0 text-center">
-                            Score:
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<h3 id="turnDisplay" class="display-3 text-capitalize"></h3>
 <div class="row">
     <div class="col-9">
         <div class="table-responsive">
@@ -67,7 +39,7 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
         </div>
     </div>
     <div class="col-3">
-        <div class="bg-dark text-white h-100">
+        <div class="bg-dark text-white h-100 text-center">
             <h3 class="border-bottom border-white p-1 mb-3">History</h3>
             <ul id="historyList" class="list-unstyled">
                 {% for move in game.parsed_history %}
@@ -76,6 +48,35 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
                 <li class="mx-3">No moves yet.</li>
                 {% endfor %}
             </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead> <!-- head is necessary to control width of columns -->
+                    <tr>
+                        {% for _ in ''|ljust:"6" %}
+                        <th class="border-0" scope='col'></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id='whiteScore' class="reversi-cell bg-dark p-0"></td>
+                        <td id='whiteCount' colspan="2"
+                        class="align-middle p-0 text-center">
+                            Score:
+                        </td>
+                        <td id='blackScore' class="reversi-cell p-0"></td>
+                        <td id='blackCount' colspan="2"
+                        class="align-middle p-0 text-center">
+                            Score:
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

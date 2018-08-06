@@ -39,10 +39,12 @@ $(function() {
                 }
             }
 
-            if (playerPosition == 'white' && data.turn == 'white')
+            if (playerPosition == 'white' && data.turn == "White's Turn")
                 onHover(whiteTile, 'white', socket);
-            else if (playerPosition == 'black' && data.turn == 'black')
+            else if (playerPosition == 'black' && data.turn == "Black's Turn")
                 onHover(blackTile, 'black', socket);
+
+            $('#turnDisplay').text(data.turn);
         }
 
         if (data.new_move) {
@@ -53,43 +55,65 @@ $(function() {
                 $(`#${cell}`).append(whiteTile.outerHTML);
                 flipTiles(cell, 'white');
 
-                if (playerPosition == 'black' && data.turn == 'black')
+                if (playerPosition == 'black' && data.turn == "Black's Turn")
                     onHover(blackTile, 'black', socket);
             } else {
                 $(`#${cell}`).append(blackTile.outerHTML);
                 flipTiles(cell, 'black');
 
-                if (playerPosition == 'white' && data.turn == 'white')
+                if (playerPosition == 'white' && data.turn == "White's Turn")
                     onHover(whiteTile, 'white', socket);
             }
 
+            $('#turnDisplay').text(data.turn);
             $('#historyList').append($(`<li class=mx-3>${data.move}</li>`));
+        }
+
+        if (data.game_over) {
+            $('#turnDisplay').text(data.winner);
         }
     }
 });
 
+// function to apply a hover event to valid tiles
 function onHover (tile, color, socket) {
-    $('#board .reversi-cell:empty').hover(event => {
-        // event handler for 'mouseenter'
-        var square = $(event.target),
-            id = square.attr('id');
-        if (square.is(':empty') && isValidSquare(id, color)) {
-            square.removeClass('table-success').addClass('table-info');
-            square.on('click', () => {
-                square.addClass('table-success').removeClass('table-info');
-                $('.reversi-cell').off('mouseenter mouseleave click');
-                socket.send(JSON.stringify({
-                    "command": 'move',
-                    "move": `${color[0]}${square.attr('id')}`
-                }));
-            });
-        }
-    }, event => {
-        // event handler for 'mouseleave'
-        var square = $(event.target);
-        square.addClass('table-success').removeClass('table-info');
-        square.off('click');
+    // filter cells to only those pertaining to valid moves
+    var valid = $('#board .reversi-cell:empty').filter(function (index) {
+        let id = $(this).attr('id');
+        return isValidSquare(id, color);
     });
+
+    // if there are still valid moves, apply the hover event
+    if (valid.length > 0) {
+        valid.hover(event => {
+            // event handler for 'mouseenter'
+            var square = $(event.target),
+                id = square.attr('id');
+                square.removeClass('table-success').addClass('table-warning');
+                square.on('click', () => {
+                    square.addClass('table-success').removeClass('table-warning');
+                    $('.reversi-cell').off('mouseenter mouseleave click');
+                    socket.send(JSON.stringify({
+                        "command": 'move',
+                        "move": `${color[0]}${id}`
+                    }));
+                });
+        }, event => {
+            // event handler for 'mouseleave'
+            var square = $(event.target);
+            square.addClass('table-success').removeClass('table-warning');
+            square.off('click');
+        });
+    } else {
+        var whiteScore = $('#board .tile-white').length,
+            blackScore = $('#board .tile-black').length;
+
+        var winner = whiteScore > blackScore ? 'W' : 'B';
+        socket.send(JSON.stringify({
+            "command": 'end_game',
+            "winner": winner
+        }));
+    }
 }
 
 // function to determine if a table cell constitutes a valid move

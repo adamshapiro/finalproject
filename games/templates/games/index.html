@@ -19,6 +19,8 @@
                 <div class="row">
                 {% for game in games %}
                 {% include 'games/card.html' %}
+                {% empty %}
+                <h1 class="display-1">No Current Games</h1>
                 {% endfor %}
                 </div>
                 <a class="btn btn-primary mt-4" href="{% url 'new_game' %}">
@@ -29,6 +31,8 @@
                 <div class="row">
                 {% for game in my_games %}
                 {% include 'games/card.html' %}
+                {% empty %}
+                <h1 class="display-1">No Current Games</h1>
                 {% endfor %}
                 </div>
             </div>
