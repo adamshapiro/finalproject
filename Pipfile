@@ -10,6 +10,7 @@ django-heroku = "*"
 channels = "*"
 dj-database-url = "*"
 channels-redis = "*"
+"psycopg2-binary" = "*"
 
 [dev-packages]
 
