@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['reversio.herokuapp.com']
+ALLOWED_HOSTS = ['reversio.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -73,7 +73,7 @@ WSGI_APPLICATION = 'reversio.wsgi.application'
 
 ASGI_APPLICATION = 'reversio.routing.application'
 
-redis_host = os.environ.get('REDIS_HOST', 'localhost')
+redis_host = os.environ.get('REDIS_URL', 'localhost')
 
 CHANNEL_LAYERS = {
     'default': {
