@@ -11,9 +11,38 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
 {% block body %}
 
 <div class="row">
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table">
+                <thead> <!-- head is necessary to control width of columns -->
+                    <tr>
+                        {% for _ in ''|ljust:"6" %}
+                        <th class="border-0" scope='col'></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id='whiteScore' class="reversi-cell bg-dark p-0"></td>
+                        <td id='whiteCount' colspan="2"
+                        class="align-middle pl-0 text-center">
+                            Score:
+                        </td>
+                        <td id='blackScore' class="reversi-cell p-0"></td>
+                        <td id='blackCount' colspan="2"
+                        class="align-middle pl-0 text-center">
+                            Score:
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
     <div class="col-9">
         <div class="table-responsive">
-            <table class="table table-bordered">
+            <table id="board" class="table table-bordered">
                 <thead>
                     <tr>
                         <th class="border-dark" scope="col">#</th>
@@ -40,9 +69,9 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
     <div class="col-3">
         <div class="bg-dark text-white h-100">
             <h3 class="border-bottom border-white p-1 mb-3">History</h3>
-            <ul class="list-unstyled">
+            <ul id="historyList" class="list-unstyled">
                 {% for move in game.parsed_history %}
-                <li class="mx-3">{% cycle 'B' 'W' %}{{ move }}</li>
+                <li class="mx-3">{{ move }}</li>
                 {% empty %}
                 <li class="mx-3">No moves yet.</li>
                 {% endfor %}

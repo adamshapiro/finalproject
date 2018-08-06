@@ -29,8 +29,16 @@ def game(request, game_label):
     except Game.DoesNotExist:
         return HttpResponseRedirect(reverse('index'))
 
+    user = request.user
+
+    # on joining a game with only one player (who is not the current user)
+    # join as the opponent
+    if not game.black_player and user != game.white_player:
+        game.black_player = user
+        game.save()
+
     context = {
-        'user': request.user,
+        'user': user,
         'game': game,
     }
     return render(request, 'games/game.html', context)

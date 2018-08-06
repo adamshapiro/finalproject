@@ -5,23 +5,83 @@ $(function() {
 
     var socket = new ReconnectingWebSocket(ws_path);
 
-    // create elements for game tiles
+    // create variables for game tiles and player color
     const whiteTile = document.createElement('div');
-        whiteTile.className = "tile-white";
+        whiteTile.className = 'tile-white';
     const blackTile = document.createElement('div');
-        blackTile.className = "tile-black";
+        blackTile.className = 'tile-black';
+
+    var playerPosition;
+
+    // setup the initial board state
+    $('#44, #55, #whiteScore').append(whiteTile.outerHTML);
+    $('#45, #54, #blackScore').append(blackTile.outerHTML);
 
 
-    $('.reversi-cell').hover(event => {
+    socket.onmessage = function (message) {
+        var data = JSON.parse(message.data);
+
+        if (data.setup) {
+            playerPosition = data.position;
+
+            for (let i = 0; i < data.history.length; i++) {
+                let color = data.history[i][0],
+                    cell = data.history[i].substring(1);
+
+
+                if (color == 'w') {
+                    $(`#${cell}`).append(whiteTile.outerHTML);
+                    flipTiles(cell, 'white');
+                }
+                else {
+                    $(`#${cell}`).append(blackTile.outerHTML);
+                    flipTiles(cell, 'black');
+                }
+            }
+
+            if (playerPosition == 'white' && data.turn == 'white')
+                onHover(whiteTile, 'white', socket);
+            else if (playerPosition == 'black' && data.turn == 'black')
+                onHover(blackTile, 'black', socket);
+        }
+
+        if (data.new_move) {
+            var color = data.move[0],
+                cell = data.move.substring(1);
+
+            if (color == 'w') {
+                $(`#${cell}`).append(whiteTile.outerHTML);
+                flipTiles(cell, 'white');
+
+                if (playerPosition == 'black' && data.turn == 'black')
+                    onHover(blackTile, 'black', socket);
+            } else {
+                $(`#${cell}`).append(blackTile.outerHTML);
+                flipTiles(cell, 'black');
+
+                if (playerPosition == 'white' && data.turn == 'white')
+                    onHover(whiteTile, 'white', socket);
+            }
+
+            $('#historyList').append($(`<li class=mx-3>${data.move}</li>`));
+        }
+    }
+});
+
+function onHover (tile, color, socket) {
+    $('#board .reversi-cell:empty').hover(event => {
         // event handler for 'mouseenter'
-        var square = $(event.target);
-        if (square.is(':empty') && isValidSquare(square)) {
+        var square = $(event.target),
+            id = square.attr('id');
+        if (square.is(':empty') && isValidSquare(id, color)) {
             square.removeClass('table-success').addClass('table-info');
             square.on('click', () => {
                 square.addClass('table-success').removeClass('table-info');
-                square.append(whiteTile.outerHTML);
-                flipTiles(square);
-                square.off('mouseenter mouseleave');
+                $('.reversi-cell').off('mouseenter mouseleave click');
+                socket.send(JSON.stringify({
+                    "command": 'move',
+                    "move": `${color[0]}${square.attr('id')}`
+                }));
             });
         }
     }, event => {
@@ -30,20 +90,15 @@ $(function() {
         square.addClass('table-success').removeClass('table-info');
         square.off('click');
     });
-
-    // setup the initial board state
-    $('#44, #55').append(whiteTile.outerHTML).off('mouseenter mouseleave');
-    $('#45, #54').append(blackTile.outerHTML).off('mouseenter mouseleave');
-});
+}
 
 // function to determine if a table cell constitutes a valid move
-function isValidSquare(square) {
+function isValidSquare(square, color) {
     // deconstruct the cell's id into  row and column #s
-    [row, col] = square.attr('id').split('').map(n => +n);
+    [row, col] = square.split('').map(n => +n);
 
     // get the colors for oneself and the opponent
-    var color = 'white',
-        own = color == 'white' ? 'tile-white' : 'tile-black',
+    var own = color == 'white' ? 'tile-white' : 'tile-black',
         opposing = color == 'white' ? 'tile-black' : 'tile-white';
 
     // check all adjacent squares, making sure not to go off the board
@@ -53,23 +108,21 @@ function isValidSquare(square) {
                 if (0 < c < 9) {
                     let adj = $(`#${r}${c}`);
                     if (adj.children().hasClass(opposing)) {
-                        let a = r,
-                            b = c,
-                            rmove = r - row,
-                            cmove = c - col;
+                        let rmove = r - row,
+                            cmove = c - col,
+                            a = r + rmove,
+                            b = c + cmove;
 
                         // if the adjacent tile is the opposite color,
                         // continue moving in the same direction until a
                         // non-opposing cell is reached
-                        while ($(`#${a + rmove}${b + cmove}`)
-                            .children().hasClass(opposing)) {
+                        while ($(`#${a}${b}`).children().hasClass(opposing)) {
                             a += rmove;
                             b += cmove;
                         }
 
                         // if an own cell is reached, the move is valid
-                        if ($(`#${a + rmove}${b + cmove}`)
-                            .children().hasClass(own)) {
+                        if ($(`#${a}${b}`).children().hasClass(own)) {
                             return true;
                         }
                     }
@@ -83,13 +136,12 @@ function isValidSquare(square) {
 }
 
 // function to flip opponent's tiles based starting from a valid cell
-function flipTiles(square) {
+function flipTiles(square, color) {
     // deconstruct the cell's id into  row and column #s
-    [row, col] = square.attr('id').split('').map(n => +n);
+    [row, col] = square.split('').map(n => +n);
 
     // get the colors for oneself and the opponent
-    var color = 'white',
-        own = color == 'white' ? 'tile-white' : 'tile-black',
+    var own = color == 'white' ? 'tile-white' : 'tile-black',
         opposing = color == 'white' ? 'tile-black' : 'tile-white';
 
     // check all adjacent squares, making sure not to go off the board
@@ -117,7 +169,7 @@ function flipTiles(square) {
                             check = $(`#${a}${b}`);
                         }
 
-                        // if an own cell is reached, the move is valid
+                        // if an own cell is reached, flip all tiles in between
                         if (check.children().hasClass(own)) {
                             flipping.forEach(cell => {
                                 cell.children().addClass(own).removeClass(opposing);
@@ -128,4 +180,11 @@ function flipTiles(square) {
             }
         }
     }
+
+    $('#whiteCount').text(
+        `Score: ${$('#board .tile-white').length} Tiles`
+    );
+    $('#blackCount').text(
+        `Score: ${$('#board .tile-black').length} Tiles`
+    );
 }
