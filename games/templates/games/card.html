@@ -1,20 +1,24 @@
 {% load static %}
 
 <div class="col-12 col-sm-6 col-lg-3">
-    <div class="card border-success text-center">
+    <div class="card text-center {% if game.status == 'O' %}border-success{% else %}border-danger{% endif %}">
         <img class="card-img-top"
         src="{% static 'games/img/reversi.jpg' %}" alt="Reversi Image">
         <div class="card-body">
             <p class="card-text">
-                Game hosted by {{ game.white_player.username }}
+                {% if game.single_player %}
+                    #{{ game.id }}: Solo game for {{ game.white_player.username }}
+                {% else %}
+                    #{{ game.id }}: Game hosted by {{ game.white_player.username }}
+                {% endif %}
             </p>
             <a class="btn btn-success" href="{{ game.get_absolute_url }}">
-                {% if user in game.players %}
-                Play Game
+                {% if user in game.players and game.status == 'O' %}
+                    Play Game
                 {% elif not game.black_player %}
-                Join Game
+                    Join Game
                 {% else %}
-                Watch Game
+                    View Game
                 {% endif %}
             </a>
         </div>

@@ -26,12 +26,14 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
 
     async def setup_board(self, game):
         # determine if the current user is playing and which position they are
-        if self.scope['user'] == game.white_player:
-            position = 'white'
-        elif self.scope['user'] == game.black_player:
-            position = 'black'
-        else:
-            position = 'spectating'
+        user = self.scope['user']
+        playingWhite = False
+        playingBlack = False
+
+        if user == game.white_player:
+            playingWhite = True
+        if user == game.black_player:
+            playingBlack = True
 
         history = game.parsed_history
         if game.status != 'O':
@@ -46,7 +48,8 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'setup': True,
             'history': history,
-            'position': position,
+            'playingWhite': playingWhite,
+            'playingBlack': playingBlack,
             'turn': turn
         })
 

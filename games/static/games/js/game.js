@@ -11,7 +11,8 @@ $(function() {
     const blackTile = document.createElement('div');
         blackTile.className = 'tile-black';
 
-    var playerPosition;
+    var playingWhite,
+        playingBlack;
 
     // setup the initial board state
     $('#44, #55, #whiteScore').append(whiteTile.outerHTML);
@@ -22,7 +23,8 @@ $(function() {
         var data = JSON.parse(message.data);
 
         if (data.setup) {
-            playerPosition = data.position;
+            playingWhite = data.playingWhite;
+            playingBlack = data.playingBlack;
 
             for (let i = 0; i < data.history.length; i++) {
                 let color = data.history[i][0],
@@ -39,15 +41,18 @@ $(function() {
                 }
             }
 
-            if (playerPosition == 'white' && data.turn == "White's Turn")
+            if (playingWhite && data.turn == "White's Turn")
                 onHover(whiteTile, 'white', socket);
-            else if (playerPosition == 'black' && data.turn == "Black's Turn")
+            else if (playingBlack && data.turn == "Black's Turn")
                 onHover(blackTile, 'black', socket);
+
+            $('.d-none').removeClass('d-none');
 
             $('#turnDisplay').text(data.turn);
         }
 
         if (data.new_move) {
+            $('#emptyList').remove();
             var color = data.move[0],
                 cell = data.move.substring(1);
 
@@ -55,13 +60,13 @@ $(function() {
                 $(`#${cell}`).append(whiteTile.outerHTML);
                 flipTiles(cell, 'white');
 
-                if (playerPosition == 'black' && data.turn == "Black's Turn")
+                if (playingBlack && data.turn == "Black's Turn")
                     onHover(blackTile, 'black', socket);
             } else {
                 $(`#${cell}`).append(blackTile.outerHTML);
                 flipTiles(cell, 'black');
 
-                if (playerPosition == 'white' && data.turn == "White's Turn")
+                if (playingWhite && data.turn == "White's Turn")
                     onHover(whiteTile, 'white', socket);
             }
 

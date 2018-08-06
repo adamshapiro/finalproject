@@ -11,7 +11,7 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
 {% block body %}
 
 <h3 id="turnDisplay" class="display-3 text-capitalize"></h3>
-<div class="row">
+<div class="row d-none">
     <div class="col-9">
         <div class="table-responsive">
             <table id="board" class="table table-bordered">
@@ -45,16 +45,16 @@ src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
                 {% for move in game.parsed_history %}
                 <li class="mx-3">{{ move }}</li>
                 {% empty %}
-                <li class="mx-3">No moves yet.</li>
+                <li id="emptyList" class="mx-3">No moves yet.</li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-12">
+<div class="row d-none">
+    <div class="col-6">
         <div class="table-responsive">
-            <table class="table table-bordered">
+            <table class="table">
                 <thead> <!-- head is necessary to control width of columns -->
                     <tr>
                         {% for _ in ''|ljust:"6" %}

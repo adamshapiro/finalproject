@@ -15,10 +15,14 @@ from .models import Game
 def index(request):
     user=request.user
     games = Game.objects.filter(status='O')
+    my_games = games.filter(Q(white_player=user) | Q(black_player=user))
+    old_games = Game.objects.exclude(status='O').\
+        filter(Q(white_player=user) | Q(black_player=user))
     context = {
         'user': request.user,
         'games': games,
-        'my_games': games.filter(Q(white_player=user) | Q(black_player=user))
+        'my_games': my_games,
+        'old_games': old_games
     }
     return render(request, 'games/index.html', context)
 
@@ -45,12 +49,17 @@ def game(request, game_label):
 
 @login_required(login_url='login')
 def new_game(request):
-    print('test url')
     user = request.user
     hosted = Game.objects.create(white_player=user)
-    print(hosted.label)
 
     return HttpResponseRedirect(reverse('game', args=[hosted.label]))
+
+@login_required(login_url='login')
+def solo_game(request):
+    user = request.user
+    solo = Game.objects.create(white_player=user, black_player=user)
+
+    return HttpResponseRedirect(reverse('game', args=[solo.label]))
 
 def login_view(request):
     # retain the 'next' context and sanitize it

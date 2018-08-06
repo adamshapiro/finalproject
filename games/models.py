@@ -56,14 +56,9 @@ class Game(models.Model):
     def players(self):
         return [self.white_player, self.black_player]
 
+    @property
+    def single_player(self):
+        return self.white_player == self.black_player
+
     def get_absolute_url(self):
         return reverse('game', args=[self.label])
-
-    # games playing online should have two different users playing
-    def clean(self):
-        if self.white_player == self.black_player:
-            raise ValidationError('A single person cannot play both sides.')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
