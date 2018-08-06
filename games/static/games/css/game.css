@@ -1,0 +1,24 @@
+.reversi-cell {
+    position: relative;
+}
+
+.reversi-cell:after {
+    content: '';
+    display: block;
+    padding-bottom: 100%;
+}
+
+.tile-white, .tile-black {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+}
+
+.tile-white {
+    background-color: white;
+}
+
+.tile-black {
+    background-color: black;
+}

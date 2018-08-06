@@ -2,13 +2,53 @@
 {% load static %}
 
 {% block jsfile %}
+<link rel="stylesheet" href="{% static 'games/css/game.css' %}">
 <script type="text/javascript"
-src="{% static 'games/reconnecting-websocket.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'games/game.js' %}"></script>
+src="{% static 'games/js/reconnecting-websocket.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'games/js/game.js' %}"></script>
 {% endblock %}
 
 {% block body %}
 
-{{ game.label }}
+<div class="row">
+    <div class="col-9">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th class="border-dark" scope="col">#</th>
+                        {% for _ in ''|ljust:"8" %}
+                        <th class="border-dark" scope="col">{{ forloop.counter }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for _ in ''|center:"8" %}
+                    <tr>
+                        <th class="border-dark" scope="row">{{ forloop.counter }}</th>
+
+                        {% for _ in ''|ljust:"8" %}
+                        <td class="reversi-cell table-success border-dark p-0"
+                        id="{{ forloop.parentloop.counter }}{{ forloop.counter }}"></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="bg-dark text-white h-100">
+            <h3 class="border-bottom border-white p-1 mb-3">History</h3>
+            <ul class="list-unstyled">
+                {% for move in game.parsed_history %}
+                <li class="mx-3">{% cycle 'B' 'W' %}{{ move }}</li>
+                {% empty %}
+                <li class="mx-3">No moves yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

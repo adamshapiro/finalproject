@@ -3,13 +3,19 @@
 <div class="col-12 col-sm-6 col-md-3">
     <div class="card border-success text-center">
         <img class="card-img-top"
-        src="{% static 'img/reversi.jpg' %}" alt="Reversi Image">
+        src="{% static 'games/img/reversi.jpg' %}" alt="Reversi Image">
         <div class="card-body">
             <p class="card-text">
                 Game hosted by {{ game.white_player.username }}
             </p>
             <a class="btn btn-success" href="{{ game.get_absolute_url }}">
+                {% if user in game.players %}
+                Play Game
+                {% elif not game.black_player %}
                 Join Game
+                {% else %}
+                Watch Game
+                {% endif %}
             </a>
         </div>
     </div>

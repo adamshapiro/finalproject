@@ -5,6 +5,7 @@ from django.urls import reverse
 
 import string, random
 
+# give each Game a random string label which will be used as the url
 def get_random_label():
     while True:
         new_label = ''.join(random.choices(
@@ -32,18 +33,26 @@ class Game(models.Model):
     history = models.CharField(max_length=240, default='')
     label = models.CharField(max_length=12, unique=True, default=get_random_label)
 
-    def add_moves(self, moves):
-        for move in moves:
-            self.history += f"x{move}"
+    def add_move(self, move):
+        self.history += f"x{move}"
         self.save()
 
+    # parse the game's history into a list of moves
+    # since each move in the history will start with 'x', the list will start
+    # with an empty value, so splice it out
     @property
     def parsed_history(self):
-        return self.history.split('x')
+        return self.history.split('x')[1:]
+
+    # shorthand to check if a user is a player in a game
+    @property
+    def players(self):
+        return [self.white_player, self.black_player]
 
     def get_absolute_url(self):
         return reverse('game', args=[self.label])
 
+    # games playing online should have two different users playing
     def clean(self):
         if self.white_player == self.black_player:
             raise ValidationError('A single person cannot play both sides.')

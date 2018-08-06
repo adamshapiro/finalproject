@@ -31,7 +31,7 @@ def game(request, game_label):
 
     context = {
         'user': request.user,
-        'game': game
+        'game': game,
     }
     return render(request, 'games/game.html', context)
 
