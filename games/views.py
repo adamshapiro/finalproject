@@ -25,7 +25,7 @@ def index(request):
         'old_games': old_games,
         'sent_challenges': user.sent_challenges.all(),
         'received_challenges': user.received_challenges.all(),
-        'users': User.objects.exclude(pk=user.id)
+        'users': User.objects.exclude(pk=user.id).exclude(is_superuser=True)
     }
     return render(request, 'games/index.html', context)
 
