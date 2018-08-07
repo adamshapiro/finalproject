@@ -1,1 +1,1 @@
-web: daphne -p 8001 reversio.asgi:application
+web: daphne -p 8000 reversio.asgi:application
