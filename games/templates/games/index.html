@@ -1,4 +1,11 @@
 {% extends 'games/layout.html' %}
+{% load static %}
+
+{% block jsfile %}
+
+<script type="text/javascript" src="{% static 'games/js/index.js' %}"></script>
+
+{% endblock %}
 
 {% block body %}
 <div class="row">
@@ -10,6 +17,13 @@
             </a>
             <a class="nav-link" id="gamesTab" data-toggle="pill" href="#gamesContent">
                 My Games
+            </a>
+            <a class="nav-link" id="challengeTab" data-toggle="pill"
+            href="#challengeContent">
+                Challenges
+                <span class="badge badge-danger">
+                    {{ sent_challenges.count|add:received_challenges.count }}
+                </span>
             </a>
         </div>
     </div>
@@ -39,16 +53,82 @@
                 {% if my_games|length_is:"0" and old_games|length_is:"0" %}
                     <h1 class="display-1">No Current Games</h1>
                 {% else %}
-                    <div class="row">
+                <h4 class="display-4">Current Games</h4>
+                    <div class="row mb-3">
                     {% for game in my_games %}
                         {% include 'games/card.html' %}
                     {% endfor %}
                     </div>
-                    <div class="row mt-3">
+                    <h4 class="display-4">Old Games</h4>
+                    <div class="row">
                     {% for game in old_games %}
                         {% include 'games/card.html' %}
                     {% endfor %}
                     </div>
+                {% endif %}
+            </div>
+            <div class="tab-pane fade" id="challengeContent">
+                <h4 class="dislay-4">Outgoing Challenges</h4>
+                <ul class="list-group" id="sentChallenges">
+                    {% for challenge in sent_challenges %}
+                    <li class='list-group-item list-group-item-info'
+                    id='challenge{{ challenge.id }}'>
+                        {{ challenge }}
+                        <button value='N' class='btn btn-danger float-right'>Cancel</button>
+                    </li>
+                    {% empty %}
+                    <li class='list-group-item no-sent'>
+                        You do not have any outgoing challenges.
+                    </li>
+                    {% endfor %}
+                </ul>
+                <h4 class="dislay-4 mt-3">Incoming Challenges</h4>
+                <ul class="list-group">
+                    {% for challenge in received_challenges %}
+                    <li class='list-group-item list-group-item-info'
+                     id='challenge{{ challenge.id }}'>
+                        {{ challenge }}
+                        <div class='btn-group float-right'>
+                            <button value='Y' class='btn btn-success'>Accept</button>
+                            <button value='N' class='btn btn-danger'>Decline</button>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class='list-group-item no-received'>
+                        You do not currently have any challenges.
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% if not users|length_is:"0" %}
+                <div class="card mt-5">
+                <div class="card-header p-0" id="headerUsers">
+                    <h5 class="mb-0">
+                        <button class="btn btn-primary btn-block collapsed text-left p-3"
+                        data-toggle="collapse" data-target="#collapseUsers"
+                        aria-expanded="false" aria-controls="collapseUsers">
+                            Show All Users
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseUsers" class="collapse" aria-labelledby="headerUsers">
+                    <div class="card-body p-0">
+                        <ul id="userChallengeList" class="list-group list-group-flush">
+                            {% for other in users %}
+                                <li class="list-group-item list-group-item-primary">
+                                    {{ other }}
+                                    <span class="float-right">
+                                        <button class="btn btn-success send-challenge"
+                                        data-user="{{ other.id }}">
+                                            Send Challenge
+                                        </button>
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                </div>
                 {% endif %}
             </div>
         </div>

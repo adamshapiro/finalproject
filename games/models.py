@@ -62,3 +62,19 @@ class Game(models.Model):
 
     def get_absolute_url(self):
         return reverse('game', args=[self.label])
+
+# a model for challenges sent directly to other players
+class Challenge(models.Model):
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_challenges"
+    )
+    receiver = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="received_challenges"
+    )
+
+    def __str__(self):
+        return f"Challenge from {self.sender.username} to {self.receiver.username}"

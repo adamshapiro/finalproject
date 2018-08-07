@@ -1,13 +1,14 @@
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.contrib.auth.models import User
 
-from .models import Game
+from .models import Game, Challenge
 
 class GamesConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         # get the label from the websocket and add the user to the group
-        self.label = self.scope['path'].split('/')[-1]
+        self.label = self.scope['url_route']['kwargs']['label']
         game = await get_game(self.label)
         await self.channel_layer.group_add(self.label, self.channel_name)
         await self.accept()
@@ -93,8 +94,102 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
             'winner': event['winner']
         })
 
+class LobbyConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        self.username = self.scope['user'].username
+        # create a group associated with the user's username so it can be found easily
+        await self.channel_layer.group_add(self.username, self.channel_name)
+        await self.accept()
+
+    async def receive_json(self, content):
+        command = content.get('command', None)
+        if command == 'new_challenge':
+            await self.send_challenge(content['receiver_id'])
+        if command == 'respond':
+            await self.send_response(content['id'], content['response'])
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.username, self.channel_name)
+
+    async def send_challenge(self, receiver_id):
+        user = self.scope['user']
+        challenge, created = await get_or_create_challenge(user, receiver_id)
+        if created:
+            await self.channel_layer.group_send(
+                challenge.receiver.username,
+                {
+                    'type': 'lobby.challenge',
+                    'challenge': challenge
+                }
+            )
+            await self.send_json({
+                'challenge_sent': True,
+                'id': challenge.id,
+                'challenge': str(challenge)
+            })
+
+    async def send_response(self, id, response):
+        notify = await respond_to_challenge(int(id), response)
+        for user in notify['notees']:
+            responder = user == self.scope['user']
+            await self.channel_layer.group_send(
+                user.username,
+                {
+                    'type': 'lobby.respond',
+                    'label': notify['label'],
+                    'responder': responder,
+                    'challenge': id
+                }
+            )
+
+    async def lobby_challenge(self, event):
+        await self.send_json({
+            'challenge_received': True,
+            'id': event['challenge'].id,
+            'challenge': str(event['challenge'])
+        })
+
+    async def lobby_respond(self, event):
+        await self.send_json({
+            'challenge_responded': True,
+            'label': event['label'],
+            'responder': event['responder'],
+            'challenge': event['challenge']
+        })
+
+
 # function to query Django model asynchronously
 @database_sync_to_async
 def get_game(game_label):
     game = Game.objects.get(label=game_label)
     return game
+
+# find the opponent based on id and create a challenge
+@database_sync_to_async
+def get_or_create_challenge(sender, receiver_id):
+    receiver = User.objects.get(pk=receiver_id)
+    # you should only be able to send one challenge to each user at a time
+    info = Challenge.objects.get_or_create(sender=sender, receiver=receiver)
+    return info
+
+# find the challenge and either create a game or destroy the challenge
+@database_sync_to_async
+def respond_to_challenge(id, response):
+    challenge = Challenge.objects.get(pk=id)
+    # if the challenge was accepted, create a game between the two players
+    if response == 'Y':
+        game = Game.objects.create(
+            white_player=challenge.sender,
+            black_player=challenge.receiver
+        )
+        label = game.label
+    else:
+        label = None
+
+    notees = [challenge.sender, challenge.receiver]
+    # after the response, delete the challenge
+    challenge.delete()
+    return {
+        'label': label,
+        'notees': notees
+    }

@@ -19,10 +19,13 @@ def index(request):
     old_games = Game.objects.exclude(status='O').\
         filter(Q(white_player=user) | Q(black_player=user))
     context = {
-        'user': request.user,
+        'user': user,
         'games': games,
         'my_games': my_games,
-        'old_games': old_games
+        'old_games': old_games,
+        'sent_challenges': user.sent_challenges.all(),
+        'received_challenges': user.received_challenges.all(),
+        'users': User.objects.exclude(pk=user.id)
     }
     return render(request, 'games/index.html', context)
 
