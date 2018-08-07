@@ -7,7 +7,7 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         # get the label from the websocket and add the user to the group
-        self.label = self.scope['url_route']['kwargs']['label']
+        self.label = self.scope['path'].split('/')[-1]
         game = await get_game(self.label)
         await self.channel_layer.group_add(self.label, self.channel_name)
         await self.accept()

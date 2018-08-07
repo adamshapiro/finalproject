@@ -18,7 +18,7 @@
             <div class="tab-pane fade show active" id="lobbyContent">
                 <div class="row">
                 {% for game in games %}
-                {% if not game.single_player or game.white_player == user %}
+                {% if not game.single_player or user in game.players %}
                 {% include 'games/card.html' %}
                 {% endif %}
                 {% empty %}
