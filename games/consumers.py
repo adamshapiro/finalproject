@@ -119,7 +119,8 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
                 challenge.receiver.username,
                 {
                     'type': 'lobby.challenge',
-                    'challenge': challenge
+                    'id': challenge.id,
+                    'challenge': str(challenge)
                 }
             )
             await self.send_json({
@@ -145,8 +146,8 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
     async def lobby_challenge(self, event):
         await self.send_json({
             'challenge_received': True,
-            'id': event['challenge'].id,
-            'challenge': str(event['challenge'])
+            'id': event['id'],
+            'challenge': event['challenge']
         })
 
     async def lobby_respond(self, event):

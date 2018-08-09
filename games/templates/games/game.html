@@ -3,7 +3,12 @@
 
 {% block jsfile %}
 <link rel="stylesheet" href="{% static 'games/css/game.css' %}">
+<script type="text/javascript" src="{% static 'games/js/game_utils.js' %}"></script>
+{% if game.white_player == game.black_player %}
+<script type="text/javascript" src="{% static 'games/js/solo.js' %}"></script>
+{% else %}
 <script type="text/javascript" src="{% static 'games/js/game.js' %}"></script>
+{% endif %}
 {% endblock %}
 
 {% block body %}
@@ -52,7 +57,7 @@
 <div class="row d-none">
     <div class="col-6">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-bordered">
                 <thead> <!-- head is necessary to control width of columns -->
                     <tr>
                         {% for _ in ''|ljust:"6" %}
@@ -61,6 +66,10 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <th scope='col' colspan='3'>{{ game.white_player }}</th>
+                        <th scope='col' colspan='3'>{{ game.black_player }}</th>
+                    </tr>
                     <tr>
                         <td id='whiteScore' class="reversi-cell bg-dark p-0"></td>
                         <td id='whiteCount' colspan="2"

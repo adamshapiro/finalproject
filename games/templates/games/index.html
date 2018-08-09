@@ -83,7 +83,7 @@
                     {% endfor %}
                 </ul>
                 <h4 class="dislay-4 mt-3">Incoming Challenges</h4>
-                <ul class="list-group">
+                <ul class="list-group" id="receivedChallenges">
                     {% for challenge in received_challenges %}
                     <li class='list-group-item list-group-item-info'
                      id='challenge{{ challenge.id }}'>

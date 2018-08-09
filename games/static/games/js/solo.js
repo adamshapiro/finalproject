@@ -41,9 +41,9 @@ $(function() {
                 }
             }
 
-            if (playingWhite && data.turn == "White's Turn")
+            if (data.turn == "White's Turn")
                 onHover(whiteTile, 'white', socket, addClick);
-            else if (playingBlack && data.turn == "Black's Turn")
+            else if (data.turn == "Black's Turn")
                 onHover(blackTile, 'black', socket, addClick);
 
             $('.d-none').removeClass('d-none');
@@ -51,34 +51,14 @@ $(function() {
             $('#turnDisplay').text(data.turn);
         }
 
-        if (data.new_move) {
-            $('#emptyList').remove();
-            var color = data.move[0],
-                cell = data.move.substring(1);
-
-            if (color == 'w') {
-                $(`#${cell}`).append(whiteTile.outerHTML);
-                flipTiles(cell, 'white');
-
-                if (playingBlack && data.turn == "Black's Turn")
-                    onHover(blackTile, 'black', socket, addClick);
-            } else {
-                $(`#${cell}`).append(blackTile.outerHTML);
-                flipTiles(cell, 'black');
-
-                if (playingWhite && data.turn == "White's Turn")
-                    onHover(whiteTile, 'white', socket, addClick);
-            }
-
-            $('#turnDisplay').text(data.turn);
-            $('#historyList').append($(`<li class=mx-3>${data.move}</li>`));
-        }
-
         if (data.game_over) {
             $('#turnDisplay').text(data.winner);
+            $('.reversi-cell').off('mouseenter mouseleave mouseclick')
         }
     }
 
+    // for offline games, the onclick function should directly control changing
+    // board state to avoid potential lag
     function addClick (square, color) {
         var id = square.attr('id'),
             move = `${color[0]}${id}`;
@@ -90,6 +70,22 @@ $(function() {
                 "command": 'move',
                 "move": move
             }));
+
+            $('#emptyList').remove();
+            if (color == 'white') {
+                $(`#${id}`).append(whiteTile.outerHTML);
+
+                onHover(blackTile, 'black', socket, addClick);
+                $('#turnDisplay').text("Black's Turn");
+            } else {
+                $(`#${id}`).append(blackTile.outerHTML);
+
+                onHover(whiteTile, 'white', socket, addClick);
+                $('#turnDisplay').text("White's Turn");
+            }
+
+            flipTiles(id, color)
+            $('#historyList').append($(`<li class=mx-3>${move}</li>`));
         });
     }
 });
