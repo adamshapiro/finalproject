@@ -4,14 +4,15 @@ from django.contrib.auth.models import User
 
 from .models import Game, Challenge
 
+# Consumer to control game flow
 class GamesConsumer(AsyncJsonWebsocketConsumer):
-
     async def connect(self):
         # get the label from the websocket and add the user to the group
         self.label = self.scope['url_route']['kwargs']['label']
         game = await get_game(self.label)
         await self.channel_layer.group_add(self.label, self.channel_name)
         await self.accept()
+        # send the board state to the user
         await self.setup_board(game)
 
     async def receive_json(self, content):
@@ -36,6 +37,8 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
         if user == game.black_player:
             playingBlack = True
 
+        # if the game is over, send the victor, otherwise send the turn
+        # black will always go first
         history = game.parsed_history
         if game.status != 'O':
             turn = game.get_status_display()
@@ -54,6 +57,7 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
             'turn': turn
         })
 
+    # add the move to the database and send the move and current turn to players
     async def send_move(self, move):
         game = await get_game(self.label)
         game.add_move(move)
@@ -70,6 +74,7 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
+    # update the game's status and inform the players
     async def send_end(self, winner):
         game = await get_game(self.label)
         game.end_game(winner)
@@ -94,6 +99,8 @@ class GamesConsumer(AsyncJsonWebsocketConsumer):
             'winner': event['winner']
         })
 
+# consumer to inform users of new challenges and responses
+# does NOT update list of games in the lobby tab
 class LobbyConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.username = self.scope['user'].username
@@ -111,6 +118,8 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.username, self.channel_name)
 
+    # if there is not currently a challenge from the sender to the receiver,
+    # create one and inform both users of the new challenge
     async def send_challenge(self, receiver_id):
         user = self.scope['user']
         challenge, created = await get_or_create_challenge(user, receiver_id)
@@ -129,6 +138,7 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
                 'challenge': str(challenge)
             })
 
+    # after a challenge is responded to, inform both users
     async def send_response(self, id, response):
         notify = await respond_to_challenge(int(id), response)
         for user in notify['notees']:

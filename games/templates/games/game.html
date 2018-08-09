@@ -4,7 +4,7 @@
 {% block jsfile %}
 <link rel="stylesheet" href="{% static 'games/css/game.css' %}">
 <script type="text/javascript" src="{% static 'games/js/game_utils.js' %}"></script>
-{% if game.white_player == game.black_player %}
+{% if game.single_player %}
 <script type="text/javascript" src="{% static 'games/js/solo.js' %}"></script>
 {% else %}
 <script type="text/javascript" src="{% static 'games/js/game.js' %}"></script>

@@ -21,11 +21,11 @@ $(function() {
 
     socket.onmessage = function (message) {
         var data = JSON.parse(message.data);
-
+        // setup the board on connection
         if (data.setup) {
             playingWhite = data.playingWhite;
             playingBlack = data.playingBlack;
-
+            // play out each move in the history
             for (let i = 0; i < data.history.length; i++) {
                 let color = data.history[i][0],
                     cell = data.history[i].substring(1);
@@ -40,7 +40,7 @@ $(function() {
                     flipTiles(cell, 'black');
                 }
             }
-
+            // add on hover events based on color turn
             if (data.turn == "White's Turn")
                 onHover(whiteTile, 'white', socket, addClick);
             else if (data.turn == "Black's Turn")
@@ -50,7 +50,7 @@ $(function() {
 
             $('#turnDisplay').text(data.turn);
         }
-
+        // if the game is over, make sure hover events are off
         if (data.game_over) {
             $('#turnDisplay').text(data.winner);
             $('.reversi-cell').off('mouseenter mouseleave mouseclick')
@@ -66,11 +66,12 @@ $(function() {
         square.on('click', () => {
             square.addClass('table-success').removeClass('table-warning');
             $('.reversi-cell').off('mouseenter mouseleave click');
+            // send the move through the websocket to update the database
             socket.send(JSON.stringify({
                 "command": 'move',
                 "move": move
             }));
-
+            // flip tiles, add events, and update the history immediately
             $('#emptyList').remove();
             if (color == 'white') {
                 $(`#${id}`).append(whiteTile.outerHTML);

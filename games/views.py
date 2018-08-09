@@ -14,10 +14,13 @@ from .models import Game
 @login_required(login_url='login')
 def index(request):
     user=request.user
+    # get list for all current games
     games = Game.objects.filter(status='O')
+    # get all a users games, divided into ongoing or complete
     my_games = games.filter(Q(white_player=user) | Q(black_player=user))
     old_games = Game.objects.exclude(status='O').\
         filter(Q(white_player=user) | Q(black_player=user))
+    # users should not be able to send a challenge to the admin account
     context = {
         'user': user,
         'games': games,
@@ -50,6 +53,7 @@ def game(request, game_label):
     }
     return render(request, 'games/game.html', context)
 
+# create a new game with the user as the white player and redirect to it
 @login_required(login_url='login')
 def new_game(request):
     user = request.user
@@ -57,6 +61,7 @@ def new_game(request):
 
     return HttpResponseRedirect(reverse('game', args=[hosted.label]))
 
+# create a new solo game with the user as both players and redirect to it
 @login_required(login_url='login')
 def solo_game(request):
     user = request.user

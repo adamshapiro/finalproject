@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ['reversio.herokuapp.com', '127.0.0.1']
 
@@ -72,6 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'reversio.wsgi.application'
 
+# settings required for Django Channels
 ASGI_APPLICATION = 'reversio.routing.application'
 
 redis_host = os.environ.get('REDIS_URL', 'redis://redis:6379')
@@ -80,7 +81,7 @@ CHANNEL_LAYERS = {
     'default': {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [('localhost', 6379)]
+            "hosts": [redis_host]
         }
     }
 }

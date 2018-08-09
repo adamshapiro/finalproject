@@ -5,6 +5,7 @@ $(function() {
 
     var socket = new ReconnectingWebSocket(ws_path);
 
+    // add click events when a challenge is accepted, denied, or cancelled
     $('#sentChallenges, #receivedChallenges').on('click', 'button', event => {
         var button = $(event.target),
             response = button.val(),
@@ -15,7 +16,7 @@ $(function() {
             'response': response
         }));
     });
-
+    // add click event for when a new challenge is sent
     $('.send-challenge').on('click', event => {
         var id = $(event.target).data('user');
         socket.send(JSON.stringify({
@@ -27,6 +28,7 @@ $(function() {
     socket.onmessage = function(message) {
         var data = JSON.parse(message.data);
 
+        // if a challenge is sent successfully, add it to the list of sent challenges
         if (data.challenge_sent) {
             var challenge = $(
                 `<li class='list-group-item list-group-item-info'
@@ -37,8 +39,12 @@ $(function() {
             );
             $('.no-sent').remove();
             $('#sentChallenges').append(challenge);
+            // update the challengeCount badge
+            $('#challengeCount').text(
+                $("li[id^='challenge']").length
+            );
         }
-
+        // likewise if a challenge is received successfully
         if (data.challenge_received) {
             var challenge = $(
                 `<li class='list-group-item list-group-item-info'
@@ -52,6 +58,10 @@ $(function() {
             );
             $('.no-received').remove();
             $('#receivedChallenges').append(challenge);
+            // update the challengeCount badge
+            $('#challengeCount').text(
+                $("li[id^='challenge']").length
+            );
         }
 
         if (data.challenge_responded) {
@@ -59,7 +69,12 @@ $(function() {
             if (data.label && data.responder) {
                 window.location.replace(`/game/${data.label}`);
             }
+            // remove the challenge from the list if the other user responded
             $(`#challenge${data.challenge}`).remove()
+            // update the challengeCount badge
+            $('#challengeCount').text(
+                $("li[id^='challenge']").length
+            );
         }
     }
 });

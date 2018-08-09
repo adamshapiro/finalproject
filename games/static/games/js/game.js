@@ -22,10 +22,13 @@ $(function() {
     socket.onmessage = function (message) {
         var data = JSON.parse(message.data);
 
+        // setup event will be sent to client upon connection
         if (data.setup) {
+            // determine which side the user is playing
             playingWhite = data.playingWhite;
             playingBlack = data.playingBlack;
 
+            // go through the game's history and play out each move
             for (let i = 0; i < data.history.length; i++) {
                 let color = data.history[i][0],
                     cell = data.history[i].substring(1);
@@ -41,21 +44,26 @@ $(function() {
                 }
             }
 
+            // only add hover (and click) events if it is the player's turn
             if (playingWhite && data.turn == "White's Turn")
                 onHover(whiteTile, 'white', socket, addClick);
             else if (playingBlack && data.turn == "Black's Turn")
                 onHover(blackTile, 'black', socket, addClick);
 
+            // wait until the board is up to date before revealing it
             $('.d-none').removeClass('d-none');
 
             $('#turnDisplay').text(data.turn);
         }
 
+        // whenever a move is sent, update the board
         if (data.new_move) {
+            // for new games, make sure "no moves yet" is removed from the history
             $('#emptyList').remove();
             var color = data.move[0],
                 cell = data.move.substring(1);
 
+            // flip tiles and add hover events as appropriate
             if (color == 'w') {
                 $(`#${cell}`).append(whiteTile.outerHTML);
                 flipTiles(cell, 'white');
@@ -74,11 +82,15 @@ $(function() {
             $('#historyList').append($(`<li class=mx-3>${data.move}</li>`));
         }
 
+        // display the proper message for ended games
         if (data.game_over) {
             $('#turnDisplay').text(data.winner);
         }
     }
 
+    // for online games, making a valid move should only directly remove events
+    // and send the move through the websocket
+    // updating the board will happen after the move is sent back from the server
     function addClick (square, color) {
         var id = square.attr('id'),
             move = `${color[0]}${id}`;

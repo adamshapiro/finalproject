@@ -18,6 +18,8 @@ function onHover (tile, color, socket, callback) {
 
                 square.removeClass('table-success').addClass('table-warning');
 
+                // add a different onclick event to the button depending on if
+                // the game is on- or offline
                 callback(square, color);
         }, event => {
             // event handler for 'mouseleave'
@@ -26,9 +28,11 @@ function onHover (tile, color, socket, callback) {
             square.off('click');
         });
     } else {
+        // if there are no valid moves, the game is over.
         var whiteScore = $('#board .tile-white').length,
             blackScore = $('#board .tile-black').length;
 
+        // whoever has more tiles down wins
         var winner = whiteScore > blackScore ? 'W' : 'B';
         socket.send(JSON.stringify({
             "command": 'end_game',
@@ -126,6 +130,7 @@ function flipTiles(square, color) {
         }
     }
 
+    // after flipping tiles, update scores
     $('#whiteCount').text(
         `Score: ${$('#board .tile-white').length} Tiles`
     );
