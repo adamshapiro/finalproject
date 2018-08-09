@@ -21,15 +21,19 @@ def index(request):
     my_games = games.filter(Q(white_player=user) | Q(black_player=user))
     old_games = Game.objects.exclude(status='O').\
         filter(Q(white_player=user) | Q(black_player=user))
+
+    sent = user.sent_challenges.all()
+    received = user.received_challenges.all()
+    others = User.objects.exclude(pk=user.id).exclude(is_superuser=True)
     # users should not be able to send a challenge to the admin account
     context = {
         'user': user,
         'games': games,
         'my_games': my_games,
         'old_games': old_games,
-        'sent_challenges': user.sent_challenges.all(),
-        'received_challenges': user.received_challenges.all(),
-        'users': User.objects.exclude(pk=user.id).exclude(is_superuser=True)
+        'sent_challenges': sent,
+        'received_challenges': received,
+        'users': others
     }
     connections.close_all()
     return render(request, 'games/index.html', context)
