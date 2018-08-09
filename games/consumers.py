@@ -1,4 +1,5 @@
 from channels.db import database_sync_to_async
+from django.db import connection
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import User
 
@@ -173,6 +174,7 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
 @database_sync_to_async
 def get_game(game_label):
     game = Game.objects.get(label=game_label)
+    connection.close()
     return game
 
 # find the opponent based on id and create a challenge
@@ -181,6 +183,7 @@ def get_or_create_challenge(sender, receiver_id):
     receiver = User.objects.get(pk=receiver_id)
     # you should only be able to send one challenge to each user at a time
     info = Challenge.objects.get_or_create(sender=sender, receiver=receiver)
+    connection.close()
     return info
 
 # find the challenge and either create a game or destroy the challenge
@@ -200,6 +203,7 @@ def respond_to_challenge(id, response):
     notees = [challenge.sender, challenge.receiver]
     # after the response, delete the challenge
     challenge.delete()
+    connection.close()
     return {
         'label': label,
         'notees': notees
