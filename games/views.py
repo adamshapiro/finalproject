@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.http import is_safe_url
 from django.db.models import Q
-from django.db import connections
+from django.db import close_old_connections
 
 from .forms import RegisterForm, LoginForm
 from .models import Game
@@ -35,7 +35,7 @@ def index(request):
         'received_challenges': received,
         'users': others
     }
-    connections.close_all()
+    close_old_connections()
     return render(request, 'games/index.html', context)
 
 @login_required(login_url='login')
@@ -53,7 +53,7 @@ def game(request, game_label):
         game.black_player = user
         game.save()
 
-    connections.close_all()
+    close_old_connections()
     context = {
         'user': user,
         'game': game,
@@ -66,7 +66,7 @@ def new_game(request):
     user = request.user
     hosted = Game.objects.create(white_player=user)
 
-    connections.close_all()
+    close_old_connections()
     return HttpResponseRedirect(reverse('game', args=[hosted.label]))
 
 # create a new solo game with the user as both players and redirect to it
@@ -75,7 +75,7 @@ def solo_game(request):
     user = request.user
     solo = Game.objects.create(white_player=user, black_player=user)
 
-    connections.close_all()
+    close_old_connections()
     return HttpResponseRedirect(reverse('game', args=[solo.label]))
 
 def login_view(request):
@@ -108,7 +108,7 @@ def login_view(request):
         'new_user': False,
         'next': redirect_to
     }
-    connections.close_all()
+    close_old_connections()
     return render(request, 'games/login.html', context)
 
 # similar to login_view (even uses the same html!) but creates a user
@@ -143,7 +143,7 @@ def register_view(request):
         'new_user': True,
         'next': redirect_to
     }
-    connections.close_all()
+    close_old_connections()
     return render(request, 'games/login.html', context)
 
 def logout_view(request):
