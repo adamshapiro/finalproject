@@ -139,7 +139,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 import dj_database_url
-DATABASES['default'].update(dj_database_url.config(conn_max_age=500))
+DATABASES['default'].update(dj_database_url.config())
 
 import django_heroku
 django_heroku.settings(locals())
