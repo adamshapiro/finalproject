@@ -72,6 +72,7 @@ $(function() {
                 "move": move
             }));
             // flip tiles, add events, and update the history immediately
+            flipTiles(id, color)
             $('#emptyList').remove();
             if (color == 'white') {
                 $(`#${id}`).append(whiteTile.outerHTML);
@@ -84,8 +85,6 @@ $(function() {
                 onHover(whiteTile, 'white', socket, addClick);
                 $('#turnDisplay').text("White's Turn");
             }
-
-            flipTiles(id, color)
             $('#historyList').append($(`<li class=mx-3>${move}</li>`));
         });
     }
